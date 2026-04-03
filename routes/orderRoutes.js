@@ -91,6 +91,7 @@ router.post("/", upload.array("files"), async (req, res) => {
       uploadedFiles.push({
         fileUrl: uploadResult.secure_url,
         publicId: uploadResult.public_id,
+        resourceType: uploadResult.resource_type,
         originalName: file.originalname,
         paperSize: meta.paperSize,
         color: meta.color,
