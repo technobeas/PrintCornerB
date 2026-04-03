@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const FileSchema = new mongoose.Schema({
   fileUrl: String,
   publicId: String,
+  resourceType: String, // ✅ ADD THIS
   type: String, // ✅ ADD THIS
   originalName: String,
   paperSize: String,
