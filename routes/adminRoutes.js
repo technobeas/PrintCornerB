@@ -12,24 +12,55 @@ router.get("/liveorders", async (req, res) => {
 });
 
 // DELETE SINGLE FILE
-router.delete("/orders/:orderId/file/:fileIndex", async (req, res) => {
+// router.delete("/orders/:orderId/file/:fileIndex", async (req, res) => {
+//   try {
+//     const { orderId, fileIndex } = req.params;
+
+//     const order = await Onlineorder.findById(orderId);
+//     if (!order) return res.status(404).json({ message: "Order not found" });
+
+//     const file = order.files[fileIndex];
+//     if (!file) return res.status(404).json({ message: "File not found" });
+
+//     // Delete from Cloudinary
+//     // await cloudinary.uploader.destroy(file.publicId, {
+//     //   resource_type: "raw",
+//     // });
+
+//     await cloudinary.uploader.destroy(file.publicId, {
+//       resource_type: file.resourceType || "raw",
+//     });
+
+//     // Remove file from order
+//     order.totalPrice -= file.price;
+//     order.files.splice(fileIndex, 1);
+
+//     await order.save();
+
+//     res.json({ message: "File deleted", order });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+router.delete("/orders/:orderId/file/:fileId", async (req, res) => {
   try {
-    const { orderId, fileIndex } = req.params;
+    const { orderId, fileId } = req.params;
 
     const order = await Onlineorder.findById(orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    const file = order.files[fileIndex];
+    const file = order.files.id(fileId); // ✅ SAFE
     if (!file) return res.status(404).json({ message: "File not found" });
 
-    // Delete from Cloudinary
     await cloudinary.uploader.destroy(file.publicId, {
-      resource_type: "raw",
+      resource_type: file.resourceType || "raw",
     });
 
-    // Remove file from order
-    order.totalPrice -= file.price;
-    order.files.splice(fileIndex, 1);
+    order.totalPrice -= file.price || 0;
+
+    file.deleteOne(); // ✅ better than splice
 
     await order.save();
 
@@ -92,9 +123,15 @@ router.delete("/orders/:orderId", async (req, res) => {
     const order = await Onlineorder.findById(req.params.orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
+    // for (const file of order.files) {
+    //   await cloudinary.uploader.destroy(file.publicId, {
+    //     resource_type: "raw",
+    //   });
+    // }
+
     for (const file of order.files) {
       await cloudinary.uploader.destroy(file.publicId, {
-        resource_type: "raw",
+        resource_type: file.resourceType || "raw",
       });
     }
 
